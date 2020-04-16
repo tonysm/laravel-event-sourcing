@@ -54,16 +54,34 @@ class Projectionist
 
     public function withoutEventHandlers(array $eventHandlers = null): Projectionist
     {
-        if (is_null($eventHandlers)) {
+        return $this->withoutProjectors($eventHandlers)
+            ->withoutReactors($eventHandlers);
+    }
+
+    public function withoutProjectors(array $projectors = null): Projectionist
+    {
+        if (is_null($projectors)) {
             $this->projectors = new EventHandlerCollection();
+
+            return $this;
+        }
+
+        $eventHandlers = Arr::wrap($projectors);
+
+        $this->projectors->remove($eventHandlers);
+
+        return $this;
+    }
+
+    public function withoutReactors(array $reactors = null): Projectionist
+    {
+        if (is_null($reactors)) {
             $this->reactors = new EventHandlerCollection();
 
             return $this;
         }
 
-        $eventHandlers = Arr::wrap($eventHandlers);
-
-        $this->projectors->remove($eventHandlers);
+        $eventHandlers = Arr::wrap($reactors);
 
         $this->reactors->remove($eventHandlers);
 

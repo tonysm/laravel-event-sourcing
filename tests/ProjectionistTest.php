@@ -18,6 +18,7 @@ use Spatie\EventSourcing\Tests\TestClasses\Projectors\MoneyAddedCountProjector;
 use Spatie\EventSourcing\Tests\TestClasses\Projectors\ProjectorThatThrowsAnException;
 use Spatie\EventSourcing\Tests\TestClasses\Projectors\QueuedProjector;
 use Spatie\EventSourcing\Tests\TestClasses\Reactors\BrokeReactor;
+use Spatie\EventSourcing\Tests\TestClasses\Reactors\NoopReactor;
 
 class ProjectionistTest extends TestCase
 {
@@ -178,5 +179,36 @@ class ProjectionistTest extends TestCase
 
         Projectionist::withoutEventHandler(BalanceProjector::class);
         $this->assertCount(0, Projectionist::getProjectors());
+    }
+
+    /** @test */
+    public function it_can_remove_reactors()
+    {
+        Projectionist::addProjector(MoneyAddedCountProjector::class);
+        Projectionist::addReactor(BrokeReactor::class);
+        Projectionist::addReactor(NoopReactor::class);
+
+        $this->assertCount(1, Projectionist::getProjectors());
+        $this->assertCount(2, Projectionist::getReactors());
+
+        // Clears specific reactors.
+        Projectionist::withoutReactors([BrokeReactor::class]);
+        $this->assertCount(1, Projectionist::getProjectors());
+        $this->assertCount(1, Projectionist::getReactors());
+
+        Projectionist::addReactor(BrokeReactor::class);
+        $this->assertCount(2, Projectionist::getReactors());
+
+        // Clears all reactors.
+        Projectionist::withoutReactors();
+        $this->assertCount(1, Projectionist::getProjectors());
+        $this->assertCount(0, Projectionist::getReactors());
+
+        // Clears all projectors.
+        Projectionist::addReactor(BrokeReactor::class);
+        Projectionist::withoutProjectors();
+
+        $this->assertCount(0, Projectionist::getProjectors());
+        $this->assertCount(1, Projectionist::getReactors());
     }
 }
